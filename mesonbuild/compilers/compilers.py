@@ -62,6 +62,7 @@ lang_suffixes = {
     # f, for, ftn, fpp are for fixed-form fortran ('f' or 'for' recommended)
     'fortran': ('f90', 'f95', 'f03', 'f08', 'f', 'for', 'ftn', 'fpp'),
     'd': ('d', 'di'),
+    'dml' : ('dml'),
     'objc': ('m',),
     'objcpp': ('mm',),
     'rust': ('rs',),
