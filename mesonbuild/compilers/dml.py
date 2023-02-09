@@ -1,7 +1,17 @@
+
+from __future__ import annotations
+
+import os.path
+import typing as T
+from mesonbuild import coredata
 from mesonbuild.compilers.compilers import Compiler
+from mesonbuild.envconfig import MachineInfo
+from mesonbuild.linkers.linkers import DynamicLinker
+from mesonbuild.programs import ExternalProgram
+from mesonbuild.utils.universal import MachineChoice, OptionKey
 
 
-class CPPCompiler(Compiler):
+class DMLCompiler(Compiler):
 
     language = 'dml'
 
@@ -21,7 +31,7 @@ class CPPCompiler(Compiler):
     def get_no_stdinc_args(self) -> T.List[str]:
         return ['']
 
-    def get_options(self) -> 'MutableKeyedOptionDictType':
+    def get_options(self) -> 'coredata.MutableKeyedOptionDictType':
         opts = super().get_options()
         key = OptionKey('std', machine=self.for_machine, lang=self.language)
         opts.update({
