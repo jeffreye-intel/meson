@@ -1,0 +1,198 @@
+// Copyright (C) 2010- Intel Corporation
+//
+// This software and the related documents are Intel copyrighted materials, and
+// your use of them is governed by the express license under which they were
+// provided to you ("License"). Unless the License provides otherwise, you may
+// not use, modify, copy, publish, distribute, disclose or transmit this
+// software or the related documents without Intel's prior written permission.
+//
+// This software and the related documents are provided as is, with no express
+// or implied warranties, other than those that are expressly stated in the
+// License.
+//
+
+// dml-perf-device.dml - Skeleton code to base new DML device modules on
+
+dml 1.4;
+
+device dml_perf_device;
+
+param desc = "name of device";
+
+param documentation = "Longer description that will appear in the help";
+
+import "utility.dml";
+import "perf-test-interface.dml";
+import "simics/model-iface/transaction.dml";
+
+extern uint64 get_time_in_us();
+
+header %{
+    #include <sys/time.h>
+
+    static int get_time_in_us() {
+        struct timeval t;
+        gettimeofday(&t, NULL);
+        return t.tv_sec * 10000000 + t.tv_usec;
+    }
+%}
+
+// Output Interfaces
+connect signal_if  {
+    interface signal;
+}
+
+connect transaction_if  {
+    interface transaction;
+}
+
+connect perf_if {
+    interface perf_test;
+}
+
+// Input interfaces
+port in_signal_if {
+    implement signal {
+        method signal_raise() {
+            log info, 4: "signal_raise()";
+        }
+    }
+}
+
+port in_transaction_if {
+    implement transaction {
+        method issue(transaction_t *t, uint64 addr) -> (exception_type_t) {
+            log info, 4: "issue()";
+            return Sim_PE_No_Exception;
+        }
+    }
+}
+
+port in_perf_if {
+    implement perf_test {
+        method example_method(int id, perf_test_data_t *data) -> (bool) {
+            log info, 4: "example_method()";
+            return true;
+        }
+    }
+}
+
+// USER-TODO: add attribute definitions here, if needed
+attribute testtime is double_attr {
+    param description   = "Records the time taken for the test so it can be read in Python";
+    param configuration = "pseudo";
+}
+
+// Basic bank declaration
+bank regs {
+    param register_size = 4;
+    // USER-TODO: Add more register declarations here.  Usually use just one
+    // line per register, containing size (optional), offset, any templates
+    // implemented, and a short description. The default behaviour of registers
+    // is a normal register behaviour where a read returns the last written
+    // value. Use the unimpl template for registers that you haven't yet
+    // implemented.
+    register process  @ 0x00 "start processing";
+    register count    @ 0x04 "how many times to call the interface";
+    register datasize @ 0x08 "size of data to use for some interface calls";
+}
+
+// USER-TODO: add implement and port declarations here, if needed
+
+// USER-TODO: add event declarations here, if needed
+
+// USER-TODO: add common methods here, if needed
+
+// USER-TODO: add templates here, if needed
+
+// Implementation of registers
+bank regs {
+    param use_io_memory = false;
+    register process {
+        field start_signal_test @ [0:0] is (read, write) {
+            method write(uint64 val) {
+                if ( val!=1 )
+                    return;
+
+                log info: "Record start time";
+                local uint64 start_time = get_time_in_us();
+
+                for( local int i = 0; i < count.val ; i ++ ) {
+                    signal_if.signal.signal_raise();
+                }
+
+                local uint64 end_time = get_time_in_us();
+                log info: "Record end time";
+                log info: "total time: %d us", end_time - start_time;
+                testtime.val = end_time - start_time;
+            }
+        }
+        field start_transaction_test @ [1:1] is (read, write) {
+            method write(uint64 val) {
+                if ( val!=1 )
+                    return;
+
+                log info: "Record start time";
+                local uint64 start_time = get_time_in_us();
+
+                for( local int i = 0; i < count.val ; i ++ ) {
+                    local uint8 val;
+                    local atom_t atoms[5] = {
+                        // the flags atom value specifies the transaction type:
+                        // - 0 defines a read transaction
+                        // - Sim_Transaction_Write - a write transaction
+                        // - Sim_Transaction_Fetch - an instruction fetch transaction
+                        ATOM_flags(0),
+
+                        ATOM_data(&val),
+                        ATOM_size(sizeof val),
+                        ATOM_initiator(obj),
+                        ATOM_list_end(0)
+                    };
+                    local transaction_t t;
+                    t.atoms = atoms;
+                    // TODO: make write transaction and add data payload
+                    // TODO: use register for data size
+                    transaction_if.transaction.issue(&t, 0x0);
+                }
+
+                local uint64 end_time = get_time_in_us();
+                log info: "Record end time";
+                log info: "total time: %d us", end_time - start_time;
+                testtime.val = end_time - start_time;
+            }
+        }
+        field start_perf_test @ [2:2] is (read, write) {
+            method write(uint64 val) {
+                if ( val!=1 )
+                    return;
+
+                log info: "Record start time";
+                local uint64 start_time = get_time_in_us();
+
+                for( local int i = 0; i < count.val ; i ++ ) {
+                    local perf_test_data_t data;
+
+                    perf_if.perf_test.example_method(0, &data);
+                }
+
+                local uint64 end_time = get_time_in_us();
+                log info: "Record end time";
+                log info: "total time: %d us", end_time - start_time;
+                testtime.val = end_time - start_time;
+            }
+        }
+    }
+}
+
+// USER-TODO: Add init() and post_init() methods here, if needed.
+// init() will be run to set the empty state of the model, before any
+// configuration or checkpointed attributes are set.  post_init() is run after
+// all configuration attributes have been set.  This happens both when the
+// initial configuration is set and when the configuration is loaded from a
+// checkpoint.
+
+method post_init() {
+    log info: "post_init()";
+}
+

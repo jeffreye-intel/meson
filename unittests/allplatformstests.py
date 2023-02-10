@@ -2042,7 +2042,7 @@ class AllPlatformTests(BasePlatformTests):
 
         langs = ['c']
         env = get_fake_env()
-        for l in ['cpp', 'cs', 'd', 'java', 'cuda', 'fortran', 'objc', 'objcpp', 'rust']:
+        for l in ['cpp', 'cs', 'd', 'dml', 'java', 'cuda', 'fortran', 'objc', 'objcpp', 'rust']:
             try:
                 comp = detect_compiler_for(env, l, MachineChoice.HOST)
                 with tempfile.TemporaryDirectory() as d:

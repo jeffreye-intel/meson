@@ -89,6 +89,7 @@ defaults['cuda_static_linker'] = ['nvlink']
 defaults['gcc_static_linker'] = ['gcc-ar']
 defaults['clang_static_linker'] = ['llvm-ar']
 defaults['nasm'] = ['nasm', 'yasm']
+defaults['dml'] = ['dmlc']
 
 
 def compiler_from_language(env: 'Environment', lang: str, for_machine: MachineChoice) -> T.Optional[Compiler]:
@@ -108,6 +109,7 @@ def compiler_from_language(env: 'Environment', lang: str, for_machine: MachineCh
         'cython': detect_cython_compiler,
         'nasm': detect_nasm_compiler,
         'masm': detect_masm_compiler,
+        'dml' : detect_dml_compiler,
     }
     return lang_map[lang](env, for_machine) if lang in lang_map else None
 
@@ -1315,3 +1317,20 @@ def _get_lcc_version_from_defines(defines: T.Dict[str, str]) -> str:
     major = generation_and_major[1:]
     minor = defines.get('__LCC_MINOR__', '0')
     return dot.join((generation, major, minor))
+
+def detect_dml_compiler(env: 'Environment', for_machine: MachineChoice) -> Compiler:
+    from .dml import DMLCompiler
+    is_cross = env.is_cross_build(for_machine)
+    comp = ['dmlc']
+    comp_class = DMLCompiler
+
+    popen_exceptions: T.Dict[str, Exception] = {}
+    try:
+        output = Popen_safe(comp)[2]
+        version = search_version(output)
+        env.coredata.add_lang_args(comp_class.language, comp_class, for_machine, env)
+        return comp_class([], comp, version, for_machine, None, None, is_cross=is_cross)
+    except OSError as e:
+        popen_exceptions[' '.join(comp)] = e
+    _handle_exceptions(popen_exceptions, [comp])
+    raise EnvironmentException('Unreachable code (exception to make mypy happy)')
