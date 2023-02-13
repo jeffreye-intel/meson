@@ -47,7 +47,7 @@ class DMLCompiler(Compiler):
         source_name = os.path.join(work_dir, 'sanity.dml')
         with open(source_name, 'w', encoding='utf-8') as ofile:
             ofile.write(f'dml 1.4;  device test_device')
-        pc = subprocess.Popen(self.exelist + [source_name], cwd=work_dir)
+        pc = subprocess.Popen(self.exelist + self.get_default_include_dirs() + [source_name], cwd=work_dir)
         pc.wait()
         if pc.returncode != 0:
             raise EnvironmentException('DMLC compiler %s can not compile DML to C/C++.' % self.name_string())
