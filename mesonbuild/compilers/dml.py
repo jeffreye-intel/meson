@@ -2,14 +2,16 @@
 from __future__ import annotations
 
 import os.path
+import subprocess
 import typing as T
+
+from pkg_resources import Environment
 from mesonbuild import coredata
 from mesonbuild.compilers.compilers import Compiler
 from mesonbuild.envconfig import MachineInfo
 from mesonbuild.linkers.linkers import DynamicLinker
 from mesonbuild.programs import ExternalProgram
-from mesonbuild.utils.universal import MachineChoice, OptionKey
-
+from mesonbuild.utils.universal import EnvironmentException, MachineChoice, OptionKey
 
 class DMLCompiler(Compiler):
 
@@ -33,12 +35,22 @@ class DMLCompiler(Compiler):
 
     def get_options(self) -> 'coredata.MutableKeyedOptionDictType':
         opts = super().get_options()
-        key = OptionKey('std', machine=self.for_machine, lang=self.language)
-        opts.update({
-            key: coredata.UserComboOption(
-                'C++ language standard to use',
-                ['none'],
-                'none',
-            ),
-        })
         return opts
+
+    def get_optimization_args(self, optimization_level: str) -> T.List[str]:
+        return [] ## TODO: Does DML have optimization arguments?
+
+    def get_output_args(self, outputname: str) -> T.List[str]:
+        return [] ## TODO: what DML output args do we need?
+
+    def sanity_check(self, work_dir: str, environment: 'Environment') -> None:
+        source_name = os.path.join(work_dir, 'sanity.dml')
+        with open(source_name, 'w', encoding='utf-8') as ofile:
+            ofile.write(f'dml 1.4;  device test_device')
+        pc = subprocess.Popen(self.exelist + [source_name], cwd=work_dir)
+        pc.wait()
+        if pc.returncode != 0:
+            raise EnvironmentException('DMLC compiler %s can not compile DML to C/C++.' % self.name_string())
+
+    def get_default_include_dirs(self) -> T.List[str]:
+        return super().get_default_include_dirs()
