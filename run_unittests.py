@@ -37,6 +37,7 @@ import mesonbuild.modules.pkgconfig
 
 from unittests.allplatformstests import AllPlatformTests
 from unittests.darwintests import DarwinTests
+from unittests.dmltests import DMLTests
 from unittests.failuretests import FailureTests
 from unittests.linuxcrosstests import LinuxCrossArmTests, LinuxCrossMingwTests
 from unittests.machinefiletests import NativeFileTests, CrossFileTests
@@ -118,7 +119,7 @@ def main():
              'TAPParserTests', 'SubprojectsCommandTests', 'PlatformAgnosticTests',
 
              'LinuxlikeTests', 'LinuxCrossArmTests', 'LinuxCrossMingwTests',
-             'WindowsTests', 'DarwinTests']
+             'WindowsTests', 'DarwinTests', 'DMLTests']
 
     try:
         import pytest # noqa: F401
