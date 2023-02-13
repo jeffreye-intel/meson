@@ -1320,7 +1320,6 @@ def _get_lcc_version_from_defines(defines: T.Dict[str, str]) -> str:
 
 def detect_dml_compiler(env: 'Environment', for_machine: MachineChoice) -> Compiler:
     from .dml import DMLCompiler
-    is_cross = env.is_cross_build(for_machine)
     comp = ['dmlc']
     comp_class = DMLCompiler
 
@@ -1329,7 +1328,7 @@ def detect_dml_compiler(env: 'Environment', for_machine: MachineChoice) -> Compi
         output = Popen_safe(comp)[2]
         version = search_version(output)
         env.coredata.add_lang_args(comp_class.language, comp_class, for_machine, env)
-        return comp_class([], comp, version, for_machine, None, None, is_cross=is_cross)
+        return comp_class([], comp, version, for_machine, None, None, is_cross=False)
     except OSError as e:
         popen_exceptions[' '.join(comp)] = e
     _handle_exceptions(popen_exceptions, [comp])
