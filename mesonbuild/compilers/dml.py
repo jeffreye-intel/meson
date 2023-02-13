@@ -31,6 +31,9 @@ class DMLCompiler(Compiler):
     def get_display_language() -> str:
         return 'DML'
 
+    def needs_static_linker(self) -> bool:
+        return False
+
     def get_no_stdinc_args(self) -> T.List[str]:
         return ['']
 
