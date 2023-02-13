@@ -16,6 +16,7 @@ from mesonbuild.utils.universal import EnvironmentException, MachineChoice, Opti
 class DMLCompiler(Compiler):
 
     language = 'dml'
+    id = "dmlc"
 
     def __init__(self, ccache: T.List[str], exelist: T.List[str], version: str, for_machine: MachineChoice, is_cross: bool,
                  info: 'MachineInfo', exe_wrapper: T.Optional['ExternalProgram'] = None,
@@ -24,7 +25,7 @@ class DMLCompiler(Compiler):
         # If a child ObjCPP class has already set it, don't set it ourselves
         Compiler.__init__(self, ccache, exelist, version, for_machine, info,
                           is_cross=is_cross, linker=linker,
-                          full_version=full_version)
+                          full_version=version)
 
     @staticmethod
     def get_display_language() -> str:
