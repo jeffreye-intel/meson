@@ -1328,7 +1328,7 @@ def detect_dml_compiler(env: 'Environment', for_machine: MachineChoice) -> Compi
         output = Popen_safe(comp)[2]
         version = search_version(output)
         env.coredata.add_lang_args(comp_class.language, comp_class, for_machine, env)
-        return comp_class([], comp, version, for_machine, None, None, is_cross=False)
+        return comp_class([], comp, version, for_machine, is_cross=False, info=None)
     except OSError as e:
         popen_exceptions[' '.join(comp)] = e
     _handle_exceptions(popen_exceptions, [comp])
